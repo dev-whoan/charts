@@ -123,6 +123,19 @@ spec:
             - "bash"
             - "-c"
             - "exec airflow webserver"
+          {{- if .Values.web.startupProbe.enabled }}
+          startupProbe:
+            initialDelaySeconds: {{ .Values.web.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.web.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.web.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.web.startupProbe.failureThreshold }}
+            successThreshold: 1
+            httpGet:
+              scheme: {{ include "airflow.web.scheme" . }}
+              {{- $airflowUrl := .Values.airflow.config.AIRFLOW__WEBSERVER__BASE_URL | default "" | printf "%s/health" | urlParse }}
+              path: {{ get $airflowUrl "path" }}
+              port: web
+          {{- end }}
           {{- if .Values.web.livenessProbe.enabled }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.web.livenessProbe.initialDelaySeconds }}
